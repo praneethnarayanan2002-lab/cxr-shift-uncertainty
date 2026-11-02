@@ -24,7 +24,8 @@ def main():
     cfg = load_config(args.config, args.set)
     for role in ("source", "target"):
         ds = cfg["data"][role]
-        print(f"\n== {role}: {ds.get('loader')} {ds.get('name', ds.get('root'))}")
+        where = ds.get('name') if ds.get('loader') == 'medmnist' else ds.get('root', '')
+        print(f"\n== {role}: {ds.get('loader')} {where}")
         print("label_map:", ds["label_map"])
         if ds.get("loader") == "medmnist":
             import medmnist

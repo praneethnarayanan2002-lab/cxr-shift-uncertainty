@@ -16,3 +16,7 @@ data/
 # large or throwaway run outputs; tables and figures under results/ can be committed
 results/smoke_test/
 results/**/predictions_*.csv
+
+# notebook exports
+results_export/
+cxr_shift_results.zip

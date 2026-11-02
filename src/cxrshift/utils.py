@@ -36,8 +36,17 @@ def deep_merge(base: dict, override: dict) -> dict:
 
 
 def _parse_scalar(text: str) -> Any:
-    """Parse a command line override value using YAML rules (ints, floats, bools, null, lists)."""
-    return yaml.safe_load(text)
+    """Parse a command line override value using YAML rules (ints, floats, bools, null, lists).
+
+    YAML 1.1 reads ``1e-3`` as a string, so numbers in that form are converted explicitly.
+    """
+    value = yaml.safe_load(text)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    return value
 
 
 def apply_overrides(cfg: dict, overrides: list[str] | None) -> dict:

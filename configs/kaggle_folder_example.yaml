@@ -1,0 +1,13 @@
+# Example of swapping in folder datasets (for instance the Kaggle "chest-xray-pneumonia"
+# dataset, layout root/{train,val,test}/{NORMAL,PNEUMONIA}/*.jpeg). Not run in this repo.
+base: default.yaml
+run_name: kaggle_source
+data:
+  source:
+    loader: folder
+    root: data/chest_xray
+    size: 224
+    split_dirs: {train: train, val: val, test: test}
+    label_map:
+      positive: [PNEUMONIA]
+      negative: [NORMAL]

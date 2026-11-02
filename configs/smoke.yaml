@@ -1,0 +1,41 @@
+# Fast CPU run on synthetic images with a tiny random ConvNeXt. Used by tests and for
+# checking the pipeline without downloading anything. The numbers it produces mean nothing.
+base: default.yaml
+run_name: smoke
+output_dir: results/smoke_test
+device: cpu
+
+data:
+  image_size: 32
+  source:
+    loader: synthetic
+    size: 32
+    seed: 1
+    prevalence: 0.6
+    n_per_split: {train: 96, val: 64, test: 64}
+    corner_marker: true
+  target:
+    loader: synthetic
+    size: 40
+    seed: 2
+    prevalence: 0.3
+    shift: 0.6
+    n_per_split: {test: 64}
+
+model:
+  backbone: tiny
+
+train:
+  epochs: 2
+  batch_size: 16
+  eval_batch_size: 32
+  lr: 1.0e-3
+  num_workers: 0
+  amp: false
+
+eval:
+  n_bootstrap: 50
+
+gradcam:
+  per_group: 2
+  n_stats: 16

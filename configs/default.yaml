@@ -1,0 +1,78 @@
+# Baseline: fine-tune ConvNeXt-Tiny on PneumoniaMNIST (pediatric), test on ChestMNIST (NIH adult).
+run_name: baseline
+output_dir: results
+seed: 0
+device: auto
+
+data:
+  image_size: 224          # model input size; images are resized if the dataset size differs
+  source:
+    loader: medmnist
+    name: pneumoniamnist
+    size: 224              # medmnist resolution to download: 28, 64, 128 or 224
+    root: data
+    label_map:             # names are looked up in medmnist.INFO at runtime
+      positive: [pneumonia]
+      negative: [normal]
+  target:
+    loader: medmnist
+    name: chestmnist
+    size: 224
+    root: data
+    eval_split: test
+    label_map:
+      positive: [pneumonia]
+      negative: no_finding  # all 14 findings absent
+      exclusive_positive: false  # true keeps only pneumonia images with no other finding
+    max_samples:            # optional stratified subsample per split, null = all
+      test: null
+
+model:
+  backbone: hf             # hf = pretrained Hugging Face model, tiny = small random ConvNeXt
+  name: facebook/convnext-tiny-224
+  num_labels: 2
+
+train:
+  epochs: 15
+  batch_size: 32
+  eval_batch_size: 128
+  lr: 1.0e-4
+  weight_decay: 0.05
+  warmup_frac: 0.05
+  grad_clip: 1.0
+  patience: 3              # early stopping on source val AUROC
+  class_weighted: true
+  augment: basic           # none | basic | strong
+  amp: true
+  num_workers: 2
+  max_steps_per_epoch: null
+
+eval:
+  n_bootstrap: 1000
+  ece_bins: 15
+  threshold:
+    method: youden         # youden | sensitivity | fixed
+    target_sensitivity: 0.9
+
+conformal:
+  alpha: 0.1               # target coverage 90%
+  cal_fraction: 0.5        # share of source val held out as the conformal calibration set
+  scores: [lac, aps]
+  mondrian: [false, true]
+  curve_alphas: [0.02, 0.05, 0.1, 0.15, 0.2, 0.3]
+
+gradcam:
+  enabled: true
+  target_layer: backbone.convnext.encoder.stages.-1
+  per_group: 4
+  n_stats: 200
+  border_frac: 0.15
+
+shortcut:
+  enabled: true
+  masks: [full, border_masked, corners_masked, corners_only]
+  border_frac: 0.1
+  corner_frac: 0.2
+
+mitigation:
+  hist_match: true         # also evaluate target images histogram-matched to source train

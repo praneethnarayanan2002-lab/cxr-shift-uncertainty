@@ -1,0 +1,5 @@
+# Ablation: same as baseline but trained with stronger intensity and geometry augmentation.
+base: default.yaml
+run_name: strong_aug
+train:
+  augment: strong
